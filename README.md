@@ -6,8 +6,8 @@ usage:
 
     import QJson
     
-    myDict = JDict("json_files/myJsonDict.json", {"myKey": "myValue"}
-    myList = JList("json_files/myJsonList.json", ["myValue"])
+    myDict = QJson.JDict("json_files/myJsonDict.json", {"myKey": "myValue"}
+    myList = QJson.JList("json_files/myJsonList.json", ["myValue"])
     
     print(myDict)
     print(myList)
