@@ -3,10 +3,10 @@ A python library that will store lists and dicts in .json files whenever they ar
 If the .json does not exist; one will be created
 
 usage:
-import QJson
-
-myDict = JDict("json_files/myJsonDict.json", {"myKey": "myValue"}
-myList = JList("json_files/myJsonList.json", ["myValue"])
-
-print(myDict)
-print(myList)
+    import QJson
+    
+    myDict = JDict("json_files/myJsonDict.json", {"myKey": "myValue"}
+    myList = JList("json_files/myJsonList.json", ["myValue"])
+    
+    print(myDict)
+    print(myList)
