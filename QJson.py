@@ -4,9 +4,27 @@ import os.path
 
 
 class JList(list):
-    def __init__(self, parent, *args, **kwargs):
-        self.parent = parent
-        super(JList, self).__init__(*args, **kwargs)
+    def __init__(self, filepath_or_parent, *args, **kwargs):
+    
+        assert (filepath_or_parent)
+        
+        self.filepath = None
+        self.parent = None
+        
+        if type(filepath_or_parent) == type(""):
+            if str(filepath_or_parent).split('.')[-1] == 'json':
+                self.filepath = str(filepath_or_parent)
+            else:
+                self.filepath = str('{}.json'.format(filepath_or_parent))
+                
+            if os.path.isfile(self.filepath):
+                super(JList, self).__init__(self.read())
+            else:
+                super(JList, self).__init__(*args, **kwargs)
+                self.write()
+        else:
+            self.parent = filepath_or_parent
+            super(JList, self).__init__(*args, **kwargs)
         
     def __getitem__(self, key):
         _item = super(JList, self).__getitem__(key)
@@ -54,12 +72,45 @@ class JList(list):
         return _reverse
         
     def write(self):
-        self.parent.write()
+        if self.parent != None and self.filepath == None:
+            self.parent.write()
+        else:
+            with open(self.filepath, 'w') as outfile:
+                json.dump(self, outfile, sort_keys = True, indent = 4,
+                    ensure_ascii=False)
+                    
+    def read(self):
+        if self.parent != None and self.filepath == None:
+            return self
+        else:
+            with open(self.filepath, 'r') as infile:
+                jsonData = json.load(infile)
+            self = jsonData
+            return self
 
 class JDict(dict):
-    def __init__(self, parent, *args, **kwargs):
-        self.parent = parent
-        super(JDict, self).__init__( *args, **kwargs)
+    def __init__(self, filepath_or_parent, *args, **kwargs):
+    
+        assert (filepath_or_parent)
+        
+        self.filepath = None
+        self.parent = None
+        
+        if type(filepath_or_parent) == type(""):
+            if str(filepath_or_parent).split('.')[-1] == 'json':
+                self.filepath = str(filepath_or_parent)
+            else:
+                self.filepath = str('{}.json'.format(filepath_or_parent))
+                
+            if os.path.isfile(self.filepath):
+                super(JDict, self).__init__(self.read())
+            else:
+                super(JDict, self).__init__(*args, **kwargs)
+                self.write()
+        else:
+            self.parent = filepath_or_parent
+            super(JDict, self).__init__(*args, **kwargs)
+            
     def __getitem__(self, key):
         _item = super(JDict, self).__getitem__(key)
         if type(_item) == type({}):
@@ -75,42 +126,18 @@ class JDict(dict):
         self.write()
         
     def write(self):
-        self.parent.write()
-        
-class QJson(dict):
-    def __init__(self, filepath, *args, **kwargs):
-        if str(filepath).split('.')[-1] == 'json':
-            self.filepath = str(filepath)
+        if self.parent != None and self.filepath == None:
+            self.parent.write()
         else:
-            self.filepath = str('{}.json'.format(filepath))
-            
-        if os.path.isfile(self.filepath):
-            super(QJson, self).__init__(self.read())
-        else:
-            super(QJson, self).__init__(*args, **kwargs)
-            self.write()
-           
-    def __getitem__(self, key):
-        _item = super(QJson, self).__getitem__(key)
-        if type(_item) == type({}):
-            super(QJson, self).__setitem__( key, JDict(self, _item) )
-            _item = super(QJson, self).__getitem__(key)
-        if type(_item) == type([]):
-            super(QJson, self).__setitem__( key, JList(self, _item) )
-            _item = super(QJson, self).__getitem__(key)
-        return _item
-        
-    def __setitem__(self, key, value):
-        super(QJson, self).__setitem__(key, value)
-        self.write()
-    
-    def write(self):
-        with open(self.filepath, 'w') as outfile:
-            json.dump(self, outfile, sort_keys = True, indent = 4,
-                ensure_ascii=False)
-        
+            with open(self.filepath, 'w') as outfile:
+                json.dump(self, outfile, sort_keys = True, indent = 4,
+                    ensure_ascii=False)
+                    
     def read(self):
-        with open(self.filepath, 'r') as infile:
-            jsonData = json.load(infile)
-        self = jsonData
-        return self
+        if self.parent != None and self.filepath == None:
+            return self
+        else:
+            with open(self.filepath, 'r') as infile:
+                jsonData = json.load(infile)
+            self = jsonData
+            return self
