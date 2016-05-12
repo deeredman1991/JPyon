@@ -1,4 +1,4 @@
-# QJson
+# JPyon
 A python library that will associate python objects/dicts/lists with json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made to the python object/dict/list.
 
 If I have done my job correctly; you shouldn't notice ANY differance between using my objects/dicts/lists and native python objects/dicts/lists aside from how they are instantiated.
