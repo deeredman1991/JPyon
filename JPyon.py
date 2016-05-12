@@ -58,20 +58,30 @@ class JList(list):
         return _item
         
     def __setitem__(self, key, value):
+        if len(self) >= key+1:
+            _val_copy = self.__getitem__(key)
         super(JList, self).__setitem__(key, value)
-        self.write()
+        if len(self) >= key+1:
+            if '_val_copy' not in locals() or self.__getitem__(key) != _val_copy:
+                self.write()
         
     def __delitem__(self, key):
+        _old_len = len(self)
         super(JList, self).__delitem__(key)
-        self.write()
+        if len(self) < _old_len:
+            self.write()
         
     def __setslice__(self, i, j, sequence):
+        _old_slice = super(JList, self).__getslice__(i, j)
         super(JList, self).__setslice__(i, j, sequence)
-        self.write()
+        if super(JList, self).__getslice__(i, j) != _old_slice:
+            self.write()
     
     def __delslice__(self, i, j):
+        _old_len = len(self)
         super(JList, self).__delslice__(i, j)
-        self.write()
+        if len(self) < _old_len:
+            self.write()
         
     def append(self, x):
         super(JList, self).append(x)
@@ -127,20 +137,21 @@ class JDict(dict):
     def __init__(self, filepath_or_parent, dicti={}):
         assert (filepath_or_parent)
         
+        path_or_parent_dict = {}
         if type(filepath_or_parent) == type(""):
             if str(filepath_or_parent).split('.')[-1] == 'json':
-                dicti['_jpyon_filepath'] = filepath_or_parent
+                path_or_parent_dict['_jpyon_filepath'] = filepath_or_parent
             else:
-                dicti['_jpyon_filepath'] = '{}.json'.format(filepath_or_parent)
+                path_or_parent_dict['_jpyon_filepath'] = '{}.json'.format(filepath_or_parent)
                 
-            if os.path.isfile(dicti['_jpyon_filepath']):
-                super(JDict, self).__init__(dict(dicti.items() + parseJson(filepath_or_parent).items()))
+            if os.path.isfile(path_or_parent_dict['_jpyon_filepath']):
+                super(JDict, self).__init__( dict( path_or_parent_dict.items() + parseJson(filepath_or_parent).items() ) )
             else:
-                super(JDict, self).__init__(dicti)
+                super(JDict, self).__init__(dict(path_or_parent_dict.items() + dicti.items()))
                 self.write()
         else:
-            dicti['_jpyon_parent'] = filepath_or_parent
-            super(JDict, self).__init__(dicti)
+            path_or_parent_dict[_jpyon_parent] = filepath_or_parent
+            super(JDict, self).__init__(dict(path_or_parent_dict.items() + dicti.items()))
             
     def __getitem__(self, key):
         _item = super(JDict, self).__getitem__(key)
@@ -153,18 +164,24 @@ class JDict(dict):
         if type(_item) == type(object()):
             super(JDict, self).__setitem__( key, JPyon(self, _item) )
             _item = super(JDict, self).__getitem__(key)
-        if type(_item) == type('') and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):#self['_jpyon_filepath']:
+        if type(_item) == type('') and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):
             _item = JPyon(self, parseJson(_item))
         return _item
         
     def __setitem__(self, key, value):
+        if self.has_key(key):
+            _val_copy = self.__getitem__(key)
         super(JDict, self).__setitem__(key, value)
-        self.write()
+        if self.has_key(key):
+            if '_val_copy' not in locals() or self.__getitem__(key) != _val_copy:
+                self.write()
         
     def __delitem__(self, key):
+        _had_key = self.has_key(key)
         super(JDict, self).__delitem__(key)
-        self.write()
-        
+        if _had_key and not self.has_key(key):
+            self.write()
+            
     def clear(self):
         super(JDict, self).clear()
         self.write()
@@ -219,20 +236,25 @@ class JDict(dict):
             
 class JPyon(object):
     def __init__(self, filepath):
-        self._jpyon_filepath = filepath
+        super(JPyon, self).__setattr__('_jpyon_filepath', filepath)
         if os.path.isfile(self._jpyon_filepath):
             super(JPyon, self).__setattr__( '__dict__', JDict( self._jpyon_filepath, parseJson(filepath) ) )
         else:
             super(JPyon, self).__setattr__( '__dict__', JDict( self._jpyon_filepath, self.__dict__ ) )
         
     def __setattr__(self, name, value):
+        if hasattr(self, name):
+            _attr_copy = self.__dict__[name]
         super(JPyon, self).__setattr__(name, value)
-        if hasattr(self.__dict__, 'write'):
-            self.__dict__.write()
+        if hasattr(self, name):
+            if'_attr_copy' not in locals() or self.__dict__[name] != _attr_copy:
+                if hasattr(self.__dict__, "write"):
+                    self.__dict__.write()
             
     def __delattr__(self, name):
+        _hasattr = hasattr(self, name)
         super(JPyon, self).__delattr__(name)
-        if hasattr(self.__dict__, 'write'):
+        if _hasattr and not hasattr(self, name):
             self.__dict__.write()
             
 def parseJson(filepath):
