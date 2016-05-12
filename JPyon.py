@@ -199,9 +199,13 @@ class JDict(dict):
         if type(_item) == type([]):
             super(JDict, self).__setitem__( key, JList(self, _item) )
             _item = super(JDict, self).__getitem__(key)
+        '''
+        #Consider adding something of this nature.
+        #  for now, all supported objects must inherit from JPyon
         if type(_item) == type(object()):
             super(JDict, self).__setitem__( key, JPyon(self, _item) )
             _item = super(JDict, self).__getitem__(key)
+        '''
         if type(_item) == type('') and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):
             _item = JPyon(self, parseJson(_item))
         return _item
