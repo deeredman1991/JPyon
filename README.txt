@@ -3,7 +3,7 @@ A python library that will associate python objects/dicts/lists with json files 
 
 If I have done my job correctly; you shouldn't notice ANY differance between using my objects/dicts/lists and native python objects/dicts/lists aside from how they are instantiated.
 
-If a .json file does not exist the library will create one automatically, but if a folder in the path does not exist, in an effort to reduce messy repos due to typos, it will not create the folders.
+If a .json file does not exist, to help speed up production; the library will create one automatically but if a folder in the path does not exist, in an effort to reduce messy repos due to typos; it will not create the folders. I feel this is a solid compromise between speed and safety.
 
 usage:
 
