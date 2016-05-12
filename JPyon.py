@@ -56,7 +56,7 @@ class JList(list):
         if type(_item) == type('') and '.json' in _item and _item != self._jpyon_filepath:
             _item = JPyon(self, parseJson(_item))
         return _item
-        
+    
     def __setitem__(self, key, value):
         if len(self) >= key+1:
             _val_copy = self.__getitem__(key)
@@ -64,13 +64,45 @@ class JList(list):
         if len(self) >= key+1:
             if '_val_copy' not in locals() or self.__getitem__(key) != _val_copy:
                 self.write()
-        
+                
     def __delitem__(self, key):
         _old_len = len(self)
         super(JList, self).__delitem__(key)
         if len(self) < _old_len:
             self.write()
+    '''
+    #Python 3.x prep
+    def __setitem__(self, *args):
+        if len(args) < 2:
+            #__setitem__(self, args[0] = key, args[1] = value)
+            if len(self) >= args[0]+1:
+                _val_copy = self.__getitem__(args[0])
+            super(JList, self).__setitem__(args[0], args[1])
+            if len(self) >= args[0]+1:
+                if '_val_copy' not in locals() or self.__getitem__(args[0]) != _val_copy:
+                    self.write()
+        else:
+            #__setslice__(self, args[0] = i, args[1] = j, args[2] = sequence)
+            _old_slice = super(JList, self).__getslice__(args[0], args[1])
+            print (_old_slice)
+            super(JList, self).__setitem__(args[0], args[1], args[2])
+            if super(JList, self).__getslice__(args[0], args[1]) != _old_slice:
+                self.write()
         
+    def __delitem__(self, *args):
+        if len(args) == 1:
+            #__delitem__(self, args[0] = key)
+            _old_len = len(self)
+            super(JList, self).__delitem__(args[0])
+            if len(self) < _old_len:
+                self.write()
+        else:
+            #__delslice__(self, args[0] = i, args[1] = j)
+            _old_len = len(self)
+            super(JList, self).__delitem__(args[0], args[1])
+            if len(self) < _old_len:
+                self.write()
+    '''
     def __setslice__(self, i, j, sequence):
         _old_slice = super(JList, self).__getslice__(i, j)
         super(JList, self).__setslice__(i, j, sequence)
@@ -82,7 +114,7 @@ class JList(list):
         super(JList, self).__delslice__(i, j)
         if len(self) < _old_len:
             self.write()
-        
+    
     def append(self, x):
         super(JList, self).append(x)
         self.write()
@@ -143,15 +175,21 @@ class JDict(dict):
                 path_or_parent_dict['_jpyon_filepath'] = filepath_or_parent
             else:
                 path_or_parent_dict['_jpyon_filepath'] = '{}.json'.format(filepath_or_parent)
-                
+            
+            d = path_or_parent_dict.copy()
+            
             if os.path.isfile(path_or_parent_dict['_jpyon_filepath']):
-                super(JDict, self).__init__( dict( path_or_parent_dict.items() + parseJson(filepath_or_parent).items() ) )
+                d.update(parseJson(filepath_or_parent))
+                super(JDict, self).__init__( d )
             else:
-                super(JDict, self).__init__(dict(path_or_parent_dict.items() + dicti.items()))
+                d.update(dicti)
+                super(JDict, self).__init__( d )
                 self.write()
         else:
             path_or_parent_dict[_jpyon_parent] = filepath_or_parent
-            super(JDict, self).__init__(dict(path_or_parent_dict.items() + dicti.items()))
+            d = path_or_parent_dict.copy()
+            d.update(dicti)
+            super(JDict, self).__init__(d)
             
     def __getitem__(self, key):
         _item = super(JDict, self).__getitem__(key)
