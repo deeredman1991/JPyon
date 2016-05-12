@@ -139,7 +139,7 @@ class JDict(dict):
                 super(JDict, self).__init__(dicti)
                 self.write()
         else:
-            dicti[_jpyon_parent] = filepath_or_parent
+            dicti['_jpyon_parent'] = filepath_or_parent
             super(JDict, self).__init__(dicti)
             
     def __getitem__(self, key):
