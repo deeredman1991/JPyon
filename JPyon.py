@@ -221,9 +221,9 @@ class JPyon(object):
     def __init__(self, filepath):
         self._jpyon_filepath = filepath
         if os.path.isfile(self._jpyon_filepath):
-            self.__dict__ = JDict( self._jpyon_filepath, parseJson(filepath) )
+            super(JPyon, self).__setattr__( '__dict__', JDict( self._jpyon_filepath, parseJson(filepath) ) )
         else:
-            self.__dict__ = JDict( self._jpyon_filepath, self.__dict__ )
+            super(JPyon, self).__setattr__( '__dict__', JDict( self._jpyon_filepath, self.__dict__ ) )
         
     def __setattr__(self, name, value):
         super(JPyon, self).__setattr__(name, value)
