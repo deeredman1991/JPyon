@@ -23,7 +23,7 @@
 import json
 import os
 
-
+_JPYONS_OBJECTS = {}
 
 class JList(list):
     def __init__(self, filepath_or_parent, *args, **kwargs):
@@ -44,7 +44,7 @@ class JList(list):
         else:
             self._jpyon_parent = filepath_or_parent
             super(JList, self).__init__(*args, **kwargs)
-        
+            
     def __getitem__(self, key):
         _item = super(JList, self).__getitem__(key)
         if type(_item) == type({}):
@@ -53,18 +53,23 @@ class JList(list):
         if type(_item) == type([]):
             super(JList, self).__setitem__( key, JList(self, _item) )
             _item = super(JList, self).__getitem__(key)
-        if type(_item) == type('') and '.json' in _item and _item != self._jpyon_filepath:
-            _item = JPyon(self, parseJson(_item))
+        if isinstance(_item, unicode) and '.json' in _item and _item != super(JList, self).__getitem__('_jpyon_filepath'):
+            if _JPYONS_OBJECTS.has_key(_item):
+                _item = _JPYONS_OBJECTS[_item]
+            else:
+                _item_copy = _item
+                _item = JPyon(_item)
+                _JPYONS_OBJECTS[_item_copy] = _item
         return _item
     
     def __setitem__(self, key, value):
         if len(self) >= key+1:
-            _val_copy = self.__getitem__(key)
+            _val_copy = super(JList, self).__getitem__(key)
         super(JList, self).__setitem__(key, value)
         if len(self) >= key+1:
-            if '_val_copy' not in locals() or self.__getitem__(key) != _val_copy:
+            if '_val_copy' not in locals() or super(JList, self).__getitem__(key) != _val_copy:
                 self.write()
-                
+    
     def __delitem__(self, key):
         _old_len = len(self)
         super(JList, self).__delitem__(key)
@@ -151,7 +156,7 @@ class JList(list):
             self._jpyon_parent.write()
         else:
             with open(self._jpyon_filepath, 'w') as outfile:
-                _list_copy = self
+                _list_copy = self[:]
                 for v in _list_copy:
                     if issubclass(type(v), JPyon):
                         _list_copy[_list_copy.index(v)] = v._jpyon_filepath
@@ -186,7 +191,7 @@ class JDict(dict):
                 super(JDict, self).__init__( d )
                 self.write()
         else:
-            path_or_parent_dict[_jpyon_parent] = filepath_or_parent
+            path_or_parent_dict['_jpyon_parent'] = filepath_or_parent
             d = path_or_parent_dict.copy()
             d.update(dicti)
             super(JDict, self).__init__(d)
@@ -199,15 +204,13 @@ class JDict(dict):
         if type(_item) == type([]):
             super(JDict, self).__setitem__( key, JList(self, _item) )
             _item = super(JDict, self).__getitem__(key)
-        '''
-        #Consider adding something of this nature.
-        #  for now, all supported objects must inherit from JPyon
-        if type(_item) == type(object()):
-            super(JDict, self).__setitem__( key, JPyon(self, _item) )
-            _item = super(JDict, self).__getitem__(key)
-        '''
-        if type(_item) == type('') and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):
-            _item = JPyon(self, parseJson(_item))
+        if isinstance(_item, unicode) and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):
+            if _JPYONS_OBJECTS.has_key(_item):
+                _item = _JPYONS_OBJECTS[_item]
+            else:
+                _item_copy = _item
+                _item = JPyon(_item)
+                _JPYONS_OBJECTS[_item_copy] = _item
         return _item
         
     def __setitem__(self, key, value):
@@ -283,6 +286,18 @@ class JPyon(object):
             super(JPyon, self).__setattr__( '__dict__', JDict( self._jpyon_filepath, parseJson(filepath) ) )
         else:
             super(JPyon, self).__setattr__( '__dict__', JDict( self._jpyon_filepath, self.__dict__ ) )
+        _JPYONS_OBJECTS[self._jpyon_filepath] = self
+            
+    def __getattribute__(self, name):
+        _attr = super(JPyon, self).__getattribute__(name)
+        if isinstance(_attr, unicode) and '.json' in _attr and _attr != super(JPyon, self).__getattribute__('_jpyon_filepath'):
+            if _JPYONS_OBJECTS.has_key(_attr):
+                _attr = _JPYONS_OBJECTS[_attr]
+            else:
+                _attr_copy = _attr
+                _attr = JPyon(_attr)
+                _JPYONS_OBJECTS[_attr_copy] = _attr
+        return _attr
         
     def __setattr__(self, name, value):
         if hasattr(self, name):
