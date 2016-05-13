@@ -1,3 +1,11 @@
+import time
+# Returns current time in seconds from epoch UTC
+current_utc_time = lambda: int(round(time.time()))
+
+# Returns current time in millis from epoch UTC
+current_utc_time_millis = lambda: int(round(time.time()) * 1000)
+
+
 # The MIT License (MIT)
 # 
 # Copyright (c) 2016 deeredman1991
@@ -394,3 +402,174 @@ def parseJson(filepath):
     with open(filepath, 'r') as infile:
         jsonData = json.load(infile) 
     return jsonData
+           
+class MyJPyon(JPyon):
+    def __init__(self, filepath, myVar):
+        self.myVar = myVar
+        self.jPyon_Link(filepath)
+    
+    
+startUTC = current_utc_time_millis()
+print("Start Instantiate")
+myObj = MyJPyon("myJsonObj.json", "foobar")
+myObj2 = MyJPyon("myJsonObj2.json", "barfoo")
+myDict = JDict("myJsonDict.json", {"foo": "bar"})
+myDict2 = JDict("myJsonDict2.json", {"bar": "foo"})
+myList = JList("myJsonList.json", ["foobar"])
+myList2 = JList("myJsonList2.json", ["barfoo"])
+
+myObj3 = MyJPyon("myJsonObj.json", "notbar")
+myDict3 = JDict("myJsonDict.json", {"foo": "notbar"})
+myList3 = JList("myJsonList.json", ["notbar"])
+print("Finish Instantiate")
+print("-")
+print('Took {} to instantiate'.format(current_utc_time_millis()-startUTC))
+
+print("~~~")
+
+startUTC = current_utc_time_millis()
+print("Start Assignments")
+myList3[0] = "defnotbar"
+myObj3.myVar = "defnotbar"
+myDict3["foo"] = "defnotfoo"
+print("Finish Assignments")
+print("-")
+print('Took {} to assign'.format(current_utc_time_millis()-startUTC))
+
+print("~~~")
+
+startUTC = current_utc_time_millis()
+print("Start Prints")
+listStartUTC = current_utc_time_millis()
+print(myList)
+print(myList2)
+print(myList3)
+print("-")
+print('Took {} to print lists'.format(current_utc_time_millis()-listStartUTC))
+
+DictStartUTC = current_utc_time_millis()
+print(myDict)
+print(myDict2)
+print(myDict3)
+print('Took {} to print dicts'.format(current_utc_time_millis()-DictStartUTC))
+
+DictStartUTC = current_utc_time_millis()
+print(myObj.myVar)
+print(myObj2.myVar)
+print(myObj3.myVar)
+print('Took {} to print objs'.format(current_utc_time_millis()-DictStartUTC))
+print("Finish Prints")
+print("-")
+print('Took {} to print'.format(current_utc_time_millis()-startUTC))
+
+#myDict3["foo"] = "defnotbar"
+
+#print(myList[0])
+#print(myList3[0])
+
+#print(myList)
+#print(myList3)
+
+#myDict3["foo"] = "notbar"
+
+#myDict["foo"]
+
+#print(myDict)
+#print(myDict3)
+
+#myList[0].myVar = "foobar"
+
+#print('{} | {} | {}'.format(myObj.objTest.myVar, myDict["objTest"].myVar, myList[0]))
+
+
+#myObj.myVar = "notrarra"
+
+#del myObj.myVar
+
+#myDict["foo"] = 'not bar'
+
+#del myDict["foo"]
+
+#myList[0] = "bar"
+
+#myList[0:4] = ["asd", "aecae", "aevv", "aeac"]
+
+#print (myList)
+
+#print(myList)
+
+#del myList[0]
+
+#myList[0] = myObj2
+#print(myObj2)
+#print(myList[0])
+
+#myListTest = JList("listTest.json", ["foobar"])
+#myListTest2 = JList("listTest.json", ["foobar"])
+
+#myListTest[0] = "notbarrr"
+
+#print(myListTest[0])
+#print(myListTest2[0])
+
+'''
+#Object Test
+myObj.objTest = myObj2
+myDict["objTest"] = myObj2
+myList[0] = myObj2
+
+#DictTest
+myObj.dictTest = myDict2
+myDict["dictTest"] = myDict2
+myList.append(myList2)
+
+#ListTest
+myObj.listTest = myList2
+myDict["listTest"] = myList2
+myList.insert(-1, myDict2)
+
+print("Start")
+print("Object Test")
+print('ObjTest = {} DictTest = {} ListTest = {}'.format(myObj.objTest, myObj.dictTest, myObj.listTest))
+print("Dict Test")
+print(myDict)
+print("List Test")
+print(myList)
+'''
+'''
+myList.append(x)
+myList.extend(x)
+myList.insert(i, x)
+myList.remove(x)
+myList.pop([i])
+myList.index(x)
+myList.count(x)
+myList.sort(cmp=None, key=None, reverse=False)
+myList.reverse()
+
+len(myDict)
+myDict[key]
+myDict[key] = value
+del myDict[key]
+key in myDict
+key not in myDict
+iter(myDict)
+myDict.clear()
+myDict.copy()
+myDict.fromkeys(seq[, value])
+myDict.get(key[, default])
+myDict.has_key(key)
+myDict.items()
+myDict.iteritems()
+myDict.iterkeys()
+itervalues()
+keys()
+pop(key[, default])
+popitem()
+setdefault(key[, default])
+update([other])
+values()
+viewitems()
+viewkeys()
+viewvalues()
+'''
