@@ -69,6 +69,8 @@ print("List Test")
 print(myList)
 ```
 
+Again; you should NOT need to call `write()`
+
 # Proper Documentation
 
 ## `class JPyon(object):`
