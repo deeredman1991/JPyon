@@ -1,3 +1,6 @@
 *.pypirc
 *.bat
 *.json
+
+MANIFEST
+dist/*
