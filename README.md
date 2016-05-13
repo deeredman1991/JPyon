@@ -100,7 +100,7 @@ print(myList)
 >>When storing a JPyon object; the JPyon object will be stored as a string leading to it's associated .json file.
 
 
-## class JList(list):
+## `class JList(list):`
 
 >JList behaves like a native python list, aside from it's instantiation.
 >if a JList shares a .json file with another JList; they will both share the same key, value pairs.
