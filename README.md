@@ -75,7 +75,7 @@ print(myList)
 
 >JPyon() is a class that is meant to be sub-classed.
 >
->If two JPyon objects share a .json file; they will both share the same member variables.
+>If two JPyon() objects share a .json file; they will both share the same member variables.
 >
 >JPyon() objects being stored by other JPyon() objects get written to .json files as a filepath and then converted back into JPyon() objects durring runtime.
 >
