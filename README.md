@@ -46,7 +46,7 @@ To test this out; go ahead and give the following code a try.
 #Object Test
 myObj.objTest = myObj2
 myDict["objTest"] = myObj2
-myList[0] = myObj2
+myList[1] = myObj2
 
 #DictTest
 myObj.dictTest = myDict2
@@ -69,7 +69,7 @@ print("List Test")
 print(myList)
 ```
 
-Again; you should NOT need to call `write()`
+Again; you should NOT need to call `write()` you should see that the .json files have been created and populated.
 
 # Proper Documentation
 
