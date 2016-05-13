@@ -69,7 +69,7 @@ print("List Test")
 print(myList)
 ```
 
-Again; you should NOT need to call `write()` you should see that the .json files have been created and populated.
+Again; you should NOT need to call `write()` you should see that the .json files have been created and populated after running the above code.
 
 # Proper Documentation
 
