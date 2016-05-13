@@ -18,7 +18,7 @@ If a .json file does not exist, to help speed up production; the library will cr
 usage:
   Create a folder called "json_files" in your working directory and then run the following code.
 ```
-from JPyon import JPyon(), JDict(), JList()
+from jpyon import *
 
 
 #JPyon inherits from object so you have access to tools like @property and @x.setter.
