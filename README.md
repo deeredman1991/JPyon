@@ -1,5 +1,5 @@
 # JPyon for Python 2.7
-A python library that will associate python objects/dicts/lists with .json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made, and only when a modification is ACTUALLY made (i.e. if `myJList[0] == 5` then `myJList[0] = 5` will trigger a write to the .json), to the python object/dict/list.
+A python library that will associate python objects/dicts/lists with .json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made, and only when a modification is ACTUALLY made (i.e. if `myJList[0] == 5` then `myJList[0] = 5` will NOT trigger a write to the .json), to the python object/dict/list.
 
 If for some reason you want to manually write to the .json you can always call `myJList.write()`
 
