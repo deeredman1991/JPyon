@@ -76,7 +76,7 @@ print(myList)
 >JPyon() is a class that is meant to be sub-classed.
 >If two JPyon objects share a .json file; they will both share the same member variables.
 >JPyon() objects get written to .json files as strings that lead to their associated .json file.
->#### `def jPyon_Link(filepath): `
+>##### `def jPyon_Link(filepath): `
 >>Takes a [basestring](https://docs.python.org/2/library/functions.html#basestring) as an argument.
 >>
 >>Links the member variables of a JPyon object to a .json file.
