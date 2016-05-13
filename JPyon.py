@@ -39,7 +39,7 @@ class JList(list):
                 self._jpyon_filepath = str('{}.json'.format(filepath_or_parent))
                 
             if os.path.isfile(self._jpyon_filepath):
-                super(JList, self).__init__(self.read())
+                super(JList, self).__init__(parseJson(self._jpyon_filepath))
             else:
                 super(JList, self).__init__(*args, **kwargs)
                 self.write()
@@ -61,19 +61,11 @@ class JList(list):
         elif isinstance(_item, unicode) and '.json' in _item and _item != super(JList, self).__getitem__('_jpyon_filepath'):
             if _JPYONS_OBJECTS.has_key(_item):
                 _item = _JPYONS_OBJECTS[_item]
-            else:
-                _item_copy = _item
-                _item = JPyon(_item)
-                _JPYONS_OBJECTS[_item_copy] = _item
         elif hasattr(self, '_jpyon_filepath'):
             if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
                 _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
                 if super(list, _existing_JList).__repr__() != super(list, self).__repr__():
-                    #print("not same list")
-                    #print("")
-                    #print('fff {}'.format(_item))
                     _item = _JPYONS_LISTS[self._jpyon_filepath].__getitem__(key)
-                    #print('fff {}'.format(_item))
         return _item
     
     def __setitem__(self, key, value):
@@ -208,13 +200,6 @@ class JList(list):
                         _list_copy[_list_copy.index(v)] = v._jpyon_filepath
                 json.dump(_list_copy, outfile, sort_keys = True, indent = 4,
                     ensure_ascii=False)
-                    
-    def read(self):
-        if hasattr(self, '_jpyon_parent'):
-            return self
-        else:
-            self = parseJson(self._jpyon_filepath)
-            return self
 
 class JDict(dict):
     def __init__(self, filepath_or_parent, dicti={}):
@@ -256,10 +241,6 @@ class JDict(dict):
         elif isinstance(_item, unicode) and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):
             if _JPYONS_OBJECTS.has_key(_item):
                 _item = _JPYONS_OBJECTS[_item]
-            else:
-                _item_copy = _item
-                _item = JPyon(_item)
-                _JPYONS_OBJECTS[_item_copy] = _item
         elif self.has_key('_jpyon_filepath'):
             if _JPYONS_DICTS.has_key( super(JDict, self).__getitem__('_jpyon_filepath') ):
                 _existing_JDict = _JPYONS_DICTS[super(JDict, self).__getitem__('_jpyon_filepath')]
@@ -325,13 +306,6 @@ class JDict(dict):
                     
                 json.dump(_dict_copy, outfile, sort_keys = True, indent = 4,
                     ensure_ascii=False)
-                    
-    def read(self):
-        if self.has_key('_jpyon_parent'):
-            return self
-        else:
-            self = parseJson(self['_jpyon_filepath'])
-            return self
             
 class JPyon(object):
     def __init__(self, filepath):
@@ -347,10 +321,6 @@ class JPyon(object):
         if isinstance(_attr, unicode) and '.json' in _attr and _attr != super(JPyon, self).__getattribute__('_jpyon_filepath'):
             if _JPYONS_OBJECTS.has_key(_attr):
                 _attr = _JPYONS_OBJECTS[_attr]
-            else:
-                _attr_copy = _attr
-                _attr = JPyon(_attr)
-                _JPYONS_OBJECTS[_attr_copy] = _attr
         return _attr
         
     def __setattr__(self, name, value):
