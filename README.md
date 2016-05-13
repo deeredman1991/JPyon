@@ -18,12 +18,12 @@ from JPyon import JPyon(), JDict(), JList()
 #JPyon inherits from object so you have access to tools like @property and @x.setter.
 class MyJPyon(JPyon):
     def __init__(self, filepath, myVar):
-        #Member variables that get saved to .json files go here, before the call to super().
+        #Member variables that get saved to .json files go here, before the call to jPyon_Link().
         
         self.myVar = myVar
-        super(MyJPyon, self).__init__(filepath)
+        self.jPyon_Link(filepath)
         
-        #Member variables that get re-initialized every session go here, after the call to super().
+        #Member variables that get re-initialized every session go here, after the call to jPyon_Link().
     
 #This is how you initialize each datatype.
 # variable_name = ClassName(path_to_json, instance_attributes)
@@ -69,52 +69,45 @@ print("List Test")
 print(myList)
 ```
 
-#Proper Documentation
+# Proper Documentation
 
-###class JPyon(object):
-```
-# JPyon() is a class that is meant to be sub-classed.
-# If two JPyon objects share a .json file; they will both share the same member variables.
-# JPyon() objects get written to .json files as strings that lead to their associated .json file.
-```
-```    
-def __init__(filepath):
-    # __init__() must be called with a `filepath` of type `string` using super() from your subclasses 
-    # constructor. 
-    
-    # Any member variables written to your JPyon sub-class before __init__() is called 
-    # will be overwritten by it's associated .json file if one exists; if one does not exist then 
-    # your sub-classes attributes will be written to the .json file at `filepath` for the next 
-    # time your object gets instantiated. 
-    
-    # Any attribute written after the call to __init__() will be re-instantiated every time 
-    # with their default values. 
-    
-    # If this seems confusing; see the code examples above.
-```
+## `class JPyon(object):`
 
-###class JDict(dict):
-```
-# JDict behaves like a native python dictionary, aside from it's instantiation.
-# If a JDict shares a .json file with another JDict; they will both share the same key, value pairs.
-```
-``` 
-#Usage: myJDict = JDict('filepath.json', {"foo": "bar"})
-#    From this point forward myJDict should behave like any other native python dictionary.
-#    While JDict cannot store native python objects; it can store JPyon objects, which inherit from object.
-#    When storing a JPyon object; the JPyon object will be stored as a string leading to it's 
-#    associated .json file.
-```
+>JPyon() is a class that is meant to be sub-classed.
+>If two JPyon objects share a .json file; they will both share the same member variables.
+>JPyon() objects get written to .json files as strings that lead to their associated .json file.
+>#### `def jPyon_Link(filepath): `
+>>Takes a [basestring](https://docs.python.org/2/library/functions.html#basestring) as an argument.
+>>
+>>Links the member variables of a JPyon object to a .json file.
+>>
+>>Call this function in your constructor and member variables assigned before it was called will be overwritten by
+>>the .json file every time that object is instantiated while member variables assigned after the function call will not be.
+>>
+>>If your object does not have a constructor that is fine jPyon_Link() gets called in the JPyon constructor which just takes a filepath as an argument.
 
-###class JList(list):
-```
-# JList behaves like a native python list, aside from it's instantiation.
-# if a JList shares a .json file with another JList; they will both share the same key, value pairs.
-```
-```
-#Usage: myJList = JList('filepath.json', ["foo", "bar"])
-#    From this point forward myJList should behave like any other native python list.
-#    While JList cannot store native python objects; it can store JPyon objects, which inherit from object.
-#    When storing a JPyon object; the JPyon object will be stored as a string leading to it's 
-#    associated .json file.
-```
+
+## `class JDict(dict):`
+
+>JDict behaves like a native python dictionary, aside from it's instantiation.
+>If a JDict shares a .json file with another JDict; they will both share the same key, value pairs.
+> 
+>Usage: `myJDict = JDict( 'filepath.json', {"foo": "bar"} )`
+>>From this point forward myJDict should behave like any other native python dictionary.
+>>    
+>>While JDict cannot store native python objects; it can store JPyon objects, which inherit from object.
+>>
+>>When storing a JPyon object; the JPyon object will be stored as a string leading to it's associated .json file.
+
+
+## class JList(list):
+
+>JList behaves like a native python list, aside from it's instantiation.
+>if a JList shares a .json file with another JList; they will both share the same key, value pairs.
+>
+>Usage: `myJList = JList( 'filepath.json', ["foo", "bar"] )`
+>>From this point forward myJList should behave like any other native python list.
+>>
+>>While JList cannot store native python objects; it can store JPyon objects, which inherit from object.
+>>
+>>When storing a JPyon object; the JPyon object will be stored as a string leading to it's associated .json file.
