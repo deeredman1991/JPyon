@@ -1,7 +1,11 @@
 # JPyon for Python 2.7
-A python library that will associate python objects/dicts/lists with json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made to the python object/dict/list.
+A python library that will associate python objects/dicts/lists with .json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made, and only when a modification is ACTUALLY made (i.e. if `myJList[0] == 5` then `myJList[0] = 5` will trigger a write to the .json), to the python object/dict/list.
+
+If for some reason you want to manually write to the .json you can always call `myJList.write()`
 
 If I have done my job correctly; you shouldn't notice ANY differance between using my objects/dicts/lists and native python objects/dicts/lists aside from how they are instantiated.
+
+If an object/dict/list shares a .json with another object/dict/list; the second object instantiated will point to the first object. In this way; all objects should always mirror the contents of the .json without actually having to read and parse the .json every time a value is changed. While I do not recommend instantiating two objects that share the same .json file; that option is now availible to you. (You still cannot have two objects of differant types that share the same .json file for obvious reasons.)
 
 If a .json file does not exist, to help speed up production; the library will create one automatically but if a folder in the path does not exist, in an effort to reduce messy repos due to typos; it will not create the folders. I feel this is a solid compromise between speed and safety.
 
