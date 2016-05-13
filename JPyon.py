@@ -50,6 +50,15 @@ class JList(list):
             self._jpyon_parent = filepath_or_parent
             super(JList, self).__init__(*args, **kwargs)
             
+    def __repr__(self):
+        _repr = super(JList, self).__repr__()
+        if hasattr(self, '_jpyon_filepath'):
+            if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
+                _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
+                if hex(id(_existing_JList)) != hex(id(self)):
+                    _repr = _JPYONS_LISTS[self._jpyon_filepath].__repr__()
+        return _repr
+            
     def __getitem__(self, key):
         _item = super(JList, self).__getitem__(key)
         if type(_item) == type({}):
@@ -58,27 +67,26 @@ class JList(list):
         elif type(_item) == type([]):
             super(JList, self).__setitem__( key, JList(self, _item) )
             _item = super(JList, self).__getitem__(key)
-        elif isinstance(_item, unicode) and '.json' in _item and _item != super(JList, self).__getitem__('_jpyon_filepath'):
+        elif isinstance(_item, unicode) and '.json' in _item:
             if _JPYONS_OBJECTS.has_key(_item):
                 _item = _JPYONS_OBJECTS[_item]
         elif hasattr(self, '_jpyon_filepath'):
             if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
                 _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
-                if super(list, _existing_JList).__repr__() != super(list, self).__repr__():
+                if hex(id(_existing_JList)) != hex(id(self)):
                     _item = _JPYONS_LISTS[self._jpyon_filepath].__getitem__(key)
         return _item
     
     def __setitem__(self, key, value):
         if len(self) >= key+1:
             _val_copy = super(JList, self).__getitem__(key)
-            
-        super(JList, self).__setitem__(key, value)
         
         if hasattr(self, '_jpyon_filepath'):
             if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
                 _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
-                if super(list, _existing_JList).__repr__() != super(list, self).__repr__():
+                if hex(id(_existing_JList)) != hex(id(self)):
                     _JPYONS_LISTS[self._jpyon_filepath].__setitem__(key, value)
+        super(JList, self).__setitem__(key, value)
                     
         if len(self) >= key+1:
             if '_val_copy' not in locals() or super(JList, self).__getitem__(key) != _val_copy:
@@ -87,13 +95,13 @@ class JList(list):
     def __delitem__(self, key):
         key = self.__getitem__(key)
         _old_len = len(self)
-        super(JList, self).__delitem__(key)
         
         if hasattr(self, '_jpyon_filepath'):
             if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
                 _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
-                if super(list, _existing_JList).__repr__() != super(list, self).__repr__():
+                if hex(id(_existing_JList)) != hex(id(self)):
                     _JPYONS_LISTS[self._jpyon_filepath].__delitem__(key)
+        super(JList, self).__delitem__(key)
         
         if len(self) < _old_len:
             self.write()
@@ -133,13 +141,12 @@ class JList(list):
     def __setslice__(self, i, j, sequence):
         _old_slice = super(JList, self).__getslice__(i, j)
         
-        super(JList, self).__setslice__(i, j, sequence)
-        
         if hasattr(self, '_jpyon_filepath'):
             if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
                 _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
-                if super(list, _existing_JList).__repr__() != super(list, self).__repr__():
+                if hex(id(_existing_JList)) != hex(id(self)):
                     _JPYONS_LISTS[self._jpyon_filepath].__setslice__(i, j, sequence)
+        super(JList, self).__setslice__(i, j, sequence)
         
         if super(JList, self).__getslice__(i, j) != _old_slice:
             self.write()
@@ -147,13 +154,12 @@ class JList(list):
     def __delslice__(self, i, j):
         _old_len = len(self)
         
-        super(JList, self).__delslice__(i, j)
-        
         if hasattr(self, '_jpyon_filepath'):
             if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
                 _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
-                if super(list, _existing_JList).__repr__() != super(list, self).__repr__():
+                if hex(id(_existing_JList)) != hex(id(self)):
                     _JPYONS_LISTS[self._jpyon_filepath].__delslice__(i, j)
+        super(JList, self).__delslice__(i, j)
         
         if len(self) < _old_len:
             self.write()
@@ -200,7 +206,7 @@ class JList(list):
                         _list_copy[_list_copy.index(v)] = v._jpyon_filepath
                 json.dump(_list_copy, outfile, sort_keys = True, indent = 4,
                     ensure_ascii=False)
-
+                    
 class JDict(dict):
     def __init__(self, filepath_or_parent, dicti={}):
         assert (filepath_or_parent)
@@ -208,27 +214,31 @@ class JDict(dict):
         path_or_parent_dict = {}
         if type(filepath_or_parent) == type(""):
             if str(filepath_or_parent).split('.')[-1] == 'json':
-                path_or_parent_dict['_jpyon_filepath'] = filepath_or_parent
+                self._jpyon_filepath = filepath_or_parent
             else:
-                path_or_parent_dict['_jpyon_filepath'] = '{}.json'.format(filepath_or_parent)
+                self._jpyon_filepath = '{}.json'.format(filepath_or_parent)
             
-            d = path_or_parent_dict.copy()
-            
-            if os.path.isfile(path_or_parent_dict['_jpyon_filepath']):
-                d.update(parseJson(filepath_or_parent))
-                super(JDict, self).__init__( d )
+            if os.path.isfile(self._jpyon_filepath):
+                super(JDict, self).__init__( parseJson(filepath_or_parent) )
             else:
-                d.update(dicti)
-                super(JDict, self).__init__( d )
+                super(JDict, self).__init__( dicti )
                 self.write()
+                
             if not _JPYONS_DICTS.has_key(filepath_or_parent):
                 _JPYONS_DICTS[filepath_or_parent] = self
                 
         else:
-            path_or_parent_dict['_jpyon_parent'] = filepath_or_parent
-            d = path_or_parent_dict.copy()
-            d.update(dicti)
-            super(JDict, self).__init__(d)
+            self._jpyon_parent = filepath_or_parent
+            super(JDict, self).__init__( dicti )
+            
+    def __repr__(self):
+        _repr = super(JDict, self).__repr__()
+        if hasattr(self, '_jpyon_filepath'):
+            if _JPYONS_DICTS.has_key( super(JDict, self).__getattribute__('_jpyon_filepath') ):
+                _existing_JDict = _JPYONS_DICTS[super(JDict, self).__getattribute__('_jpyon_filepath')]
+                if hex(id(_existing_JDict)) != hex(id(self)):
+                    _repr = _JPYONS_DICTS[ super(JDict, self).__getattribute__('_jpyon_filepath') ].__repr__()
+        return _repr
             
     def __getitem__(self, key):
         _item = super(JDict, self).__getitem__(key)
@@ -238,20 +248,27 @@ class JDict(dict):
         elif type(_item) == type([]):
             super(JDict, self).__setitem__( key, JList(self, _item) )
             _item = super(JDict, self).__getitem__(key)
-        elif isinstance(_item, unicode) and '.json' in _item and _item != super(JDict, self).__getitem__('_jpyon_filepath'):
+        elif isinstance(_item, basestring) and '.json' in _item:
             if _JPYONS_OBJECTS.has_key(_item):
                 _item = _JPYONS_OBJECTS[_item]
-        elif self.has_key('_jpyon_filepath'):
-            if _JPYONS_DICTS.has_key( super(JDict, self).__getitem__('_jpyon_filepath') ):
-                _existing_JDict = _JPYONS_DICTS[super(JDict, self).__getitem__('_jpyon_filepath')]
-                if super(dict, _existing_JDict).__repr__() != super(dict, self).__repr__():
-                    _item = _JPYONS_DICTS[ super(JDict, self).__getitem__('_jpyon_filepath') ].__getitem__(key)
+        elif hasattr(self, '_jpyon_filepath'):
+            if _JPYONS_DICTS.has_key( super(JDict, self).__getattribute__('_jpyon_filepath') ):
+                _existing_JDict = _JPYONS_DICTS[super(JDict, self).__getattribute__('_jpyon_filepath')]
+                if hex(id(_existing_JDict)) != hex(id(self)):
+                    _item = _JPYONS_DICTS[ super(JDict, self).__getattribute__('_jpyon_filepath') ].__getitem__(key)
         return _item
         
     def __setitem__(self, key, value):
         if self.has_key(key):
             _val_copy = self.__getitem__(key)
+            
+        if hasattr(self, '_jpyon_filepath'):
+            if _JPYONS_DICTS.has_key( super(JDict, self).__getattribute__('_jpyon_filepath') ):
+                _existing_JDict = _JPYONS_DICTS[super(JDict, self).__getattribute__('_jpyon_filepath')]
+                if hex(id(_existing_JDict)) != hex(id(self)):
+                    _item = _JPYONS_DICTS[ super(JDict, self).__getattribute__('_jpyon_filepath') ].__setitem__(key, value)
         super(JDict, self).__setitem__(key, value)
+        
         if self.has_key(key):
             if '_val_copy' not in locals() or self.__getitem__(key) != _val_copy:
                 self.write()
@@ -292,21 +309,17 @@ class JDict(dict):
         return _update
         
     def write(self):
-        if self.has_key('_jpyon_parent'):
-            self['_jpyon_parent'].write()
+        if hasattr(self, '_jpyon_parent'):
+            self._jpyon_parent.write()
         else:
-            with open(self['_jpyon_filepath'], 'w') as outfile:
+            with open(self._jpyon_filepath, 'w') as outfile:
                 _dict_copy = dict(self)
                 for k, v in _dict_copy.iteritems():
                     if issubclass(type(v), JPyon):
                         _dict_copy[k] = v._jpyon_filepath
-                        
-                if _dict_copy.has_key('_jpyon_filepath'):
-                    del _dict_copy['_jpyon_filepath']
-                    
                 json.dump(_dict_copy, outfile, sort_keys = True, indent = 4,
                     ensure_ascii=False)
-            
+
 class JPyon(object):
     def __init__(self, filepath):
         super(JPyon, self).__setattr__('_jpyon_filepath', filepath)
