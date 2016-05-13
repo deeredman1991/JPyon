@@ -75,7 +75,11 @@ print(myList)
 
 >JPyon() is a class that is meant to be sub-classed.
 >If two JPyon objects share a .json file; they will both share the same member variables.
->JPyon() objects get written to .json files as strings that lead to their associated .json file.
+>
+>JPyon() objects being stored by other JPyon() objects get written to .json files as a filepath and then converted back into JPyon() objects durring runtime.
+>
+>The JPyon class overwrites it's \_\_dict\_\_ with a JDict as a result any lists or dicts stored in a JPyon object will be converted to a JList or JDict.
+>
 >##### `def jPyon_Link(filepath): `
 >>Takes a [basestring](https://docs.python.org/2/library/functions.html#basestring) as an argument.
 >>
@@ -93,11 +97,13 @@ print(myList)
 >If a JDict shares a .json file with another JDict; they will both share the same key, value pairs.
 > 
 >Usage: `myJDict = JDict( 'filepath.json', {"foo": "bar"} )`
->>From this point forward myJDict should behave like any other native python dictionary.
+>>From this point forward myJDict should behave like any other native python dictionary. With the exception that `myJDict.copy()` will return an object of type dict as I figure that if you are making a copy of a dict you probably do not want the copy to write to the .json. That and when you instantiate two JDicts linked to the same .json the second JDict to be instantiated will point to the first so that both will mirror the .json file without having to actually read from the file.
 >>    
 >>While JDict cannot store native python objects; it can store JPyon objects, which inherit from object.
 >>
 >>When storing a JPyon object; the JPyon object will be stored as a string leading to it's associated .json file.
+>>
+>>JDicts storing Lists or Dicts will automatically be converted to JLists and JDicts and linked to the JDict. This way if a change is made to the JList or JDict; it will propegate up the stack until it reaches the JDict linked to the .json which can then write the changes to the .json.
 
 
 ## `class JList(list):`
@@ -106,8 +112,10 @@ print(myList)
 >if a JList shares a .json file with another JList; they will both share the same key, value pairs.
 >
 >Usage: `myJList = JList( 'filepath.json', ["foo", "bar"] )`
->>From this point forward myJList should behave like any other native python list.
+>>From this point forward myJList should behave like any other native python list. With the exception that `myJList[:]` will return an object of type list as I figure that if you are making a copy of a list you probably do not want the copy to write to the .json. That and when you instantiate two JLists linked to the same .json the second JList to be instantiated will point to the first so that both will mirror the .json file without having to actually read from the file.
 >>
 >>While JList cannot store native python objects; it can store JPyon objects, which inherit from object.
 >>
 >>When storing a JPyon object; the JPyon object will be stored as a string leading to it's associated .json file.
+>>
+>>JLists storing Lists or Dicts will automatically be converted to JLists and JDicts and linked to the JList. This way if a change is made to the JList or JDict; it will propegate up the stack until it reaches the JList linked to the .json which can then write the changes to the .json.
