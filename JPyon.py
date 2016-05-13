@@ -275,7 +275,9 @@ class JDict(dict):
         
     def __delitem__(self, key):
         _had_key = self.has_key(key)
+        
         super(JDict, self).__delitem__(key)
+        
         if _had_key and not self.has_key(key):
             self.write()
             
@@ -313,7 +315,7 @@ class JDict(dict):
             self._jpyon_parent.write()
         else:
             with open(self._jpyon_filepath, 'w') as outfile:
-                _dict_copy = dict(self)
+                _dict_copy = self.copy()
                 for k, v in _dict_copy.iteritems():
                     if issubclass(type(v), JPyon):
                         _dict_copy[k] = v._jpyon_filepath
@@ -356,7 +358,7 @@ class JPyon(object):
                     self.write()
             
     def __delattr__(self, name):
-        _hasattr = hasattr(self, name)
+        _hadattr = hasattr(self, name)
         
         if _JPYONS_OBJECTS.has_key( super(JPyon, self).__getattribute__('_jpyon_filepath') ):
             _existing_JPyon = _JPYONS_OBJECTS[super(JPyon, self).__getattribute__('_jpyon_filepath')]
@@ -364,7 +366,7 @@ class JPyon(object):
                 _JPYONS_OBJECTS[ super(JPyon, self).__getattribute__('_jpyon_filepath') ].__delattr__(name)
         super(JPyon, self).__delattr__(name)
         
-        if _hasattr and not hasattr(self, name):
+        if _hadattr and not hasattr(self, name):
             self.write()
             
     def jPyon_Link(self, filepath):
