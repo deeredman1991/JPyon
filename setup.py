@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'jpyon',
   packages = ['jpyon'], # this must be the same as the name above
-  version = '0.3',
+  version = '0.4b',
   description = 'Converts objects, lists, and dicts to jsons automatically.',
   author = 'deeredman1991',
   author_email = 'deeredman1991@gmail.com',
