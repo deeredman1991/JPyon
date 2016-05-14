@@ -29,7 +29,6 @@ _JPYONS_LISTS = {}
 
 class JList(list):
     def __init__(self, filepath_or_parent, *args, **kwargs):
-    
         assert (filepath_or_parent)
         
         if type(filepath_or_parent) == type(""):
@@ -49,7 +48,7 @@ class JList(list):
         else:
             self._jpyon_parent = filepath_or_parent
             super(JList, self).__init__(*args, **kwargs)
-            
+    
     def __repr__(self):
         _repr = super(JList, self).__repr__()
         if hasattr(self, '_jpyon_filepath'):
@@ -58,6 +57,28 @@ class JList(list):
                 if id(_existing_JList) != id(self):
                     _repr = _JPYONS_LISTS[self._jpyon_filepath].__repr__()
         return _repr
+        
+    def __str__(self):
+        _str = super(JList, self).__str__()
+        if hasattr(self, '_jpyon_filepath'):
+            if _JPYONS_LISTS.has_key( self._jpyon_filepath ):
+                _existing_JList = _JPYONS_LISTS[self._jpyon_filepath]
+                if id(_existing_JList) != id(self):
+                    _str = _JPYONS_LISTS[self._jpyon_filepath].__str__()
+        return _str
+        
+    def __lt__(self, other):
+       return len(self) < len(other)
+    def __le__(self, other):
+        return len(self) <= len(other)
+    def __eq__(self, other):
+        return self.__repr__() == other.__repr__()
+    def __ne__(self, other):
+        return self.__repr__() != other.__repr__()
+    def __gt__(self, other):
+        return len(self) > len(other)
+    def __ge__(self, other):
+        return len(self) >= len(other)
             
     def __getitem__(self, key):
         _item = super(JList, self).__getitem__(key)
