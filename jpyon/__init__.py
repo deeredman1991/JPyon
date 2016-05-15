@@ -23,6 +23,7 @@
 import json
 import os
 import atexit
+import cPickle
 
 _JPYONS_OBJECTS = {}
 _JPYONS_DICTS = {}
@@ -37,7 +38,7 @@ class JList(list):
             self._jpyon_filepath = str('{}.json'.format(filepath))
             
         if os.path.isfile(filepath):
-            _JPYONS_DATAS[ filepath ] = parseJson(filepath)
+            _JPYONS_DATAS[ filepath ] = parse_json(filepath)
             super(JList, self).__init__(_JPYONS_DATAS[ filepath ])
         else:
             _JPYONS_DATAS[ filepath ] = None 
@@ -265,7 +266,7 @@ class JDict(dict):
             self._jpyon_filepath = '{}.json'.format(filepath)
         
         if os.path.isfile(self._jpyon_filepath):
-            _JPYONS_DATAS[ filepath ] = parseJson(filepath)
+            _JPYONS_DATAS[ filepath ] = parse_json(filepath)
             super(JDict, self).__init__( _JPYONS_DATAS[ filepath ] )
         else:
             _JPYONS_DATAS[ filepath ] = None 
@@ -353,7 +354,7 @@ class JDict(dict):
                 _keys = _JPYONS_DICTS[ super(JDict, self).__getattribute__('_jpyon_filepath') ].fromkeys(seq, value)
         return _keys
         
-    def pop(self, key, default=object()):
+    def pop(self, key, default=None):
         #test this with None...you want;
         #If key is in the dictionary, remove it and return its value, else return default. 
         #If default is not given and key is not in the dictionary, a KeyError is raised.
@@ -405,19 +406,19 @@ class JPyon(object):
         self.jPyon_Link(filepath)
             
     def __getattribute__(self, name):
+        #For linking Pyon objects with the same filepath
+        if hasattr(self, '_jpyon_filepath'):
+            if _JPYONS_OBJECTS.has_key( ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ):
+                _existing_JPyon_dict = _JPYONS_OBJECTS[ ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ]
+                if id( super(JPyon, _existing_JPyon_dict).__getattribute__('__dict__') ) != id( super(JPyon, self).__getattribute__('__dict__') ):
+                    super(JPyon, self).__setattr__('__dict__', _existing_JPyon_dict)
+    
         _attr = super(JPyon, self).__getattribute__(name)
         
         #For unpacking Pyon objects
         if isinstance(_attr, basestring) and ':|PYON|: ' in _attr and _JPYONS_OBJECTS.has_key(_item):
             _attr = _JPYONS_OBJECTS[_attr]
             super(JPyon, self).__setattr__(name, _attr)
-        
-        #For linking Pyon objects with the same filepath
-        elif hasattr(self, '_jpyon_filepath'):
-            if _JPYONS_OBJECTS.has_key( ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ):
-                _existing_JPyon = _JPYONS_OBJECTS[ ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ]
-                if id(_existing_JPyon) != id(self):
-                   _attr = _JPYONS_OBJECTS[ ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ].__getattribute__(name)
                 
         return _attr
         
@@ -439,13 +440,14 @@ class JPyon(object):
             
     def jPyon_Link(self, filepath):
         if os.path.isfile(filepath):
-            _JPYONS_DATAS[filepath] = parseJson(filepath)
+            _JPYONS_DATAS[filepath] = parse_json(filepath)
             super(JPyon, self).__setattr__( '__dict__', dict( _JPYONS_DATAS[filepath] ) )
         else:
             _JPYONS_DATAS[filepath] = None
             super(JPyon, self).__setattr__( '__dict__', dict( self.__dict__ ) )
         super(JPyon, self).__setattr__('_jpyon_filepath', filepath)
-        _JPYONS_OBJECTS[':|PYON|: {}'.format(filepath)] = self
+        if not _JPYONS_OBJECTS.has_key( ':|PYON|: {}'.format(filepath) ):
+            _JPYONS_OBJECTS[ ':|PYON|: {}'.format(filepath) ] = self
         
     def write(self):
         _dict_copy = self.__dict__.copy()
@@ -459,9 +461,10 @@ class JPyon(object):
         if _dict_copy != _JPYONS_DATAS[ super(JPyon, self).__getattribute__('_jpyon_filepath') ]:
             with open( super(JPyon, self).__getattribute__('_jpyon_filepath'), 'w') as outfile:
                 json.dump(_dict_copy, outfile, sort_keys = True, indent = 4, ensure_ascii=False)
+                
         _JPYONS_DATAS[ super(JPyon, self).__getattribute__('_jpyon_filepath') ] = _dict_copy
 
-def parseJson(filepath):
+def parse_json(filepath):
     if os.path.isfile(filepath):
         with open(filepath, 'r') as infile:
             jsonData = json.load(infile)
@@ -480,7 +483,77 @@ def parseJson(filepath):
         return jsonData
     else:
         return None
-    
+        
+def dump(obj, filepath):
+    jsonData = dumps(obj)
+    with open(filepath, 'w') as outfile:
+        outfile.write(jsonData)
+        
+def dumps(obj, indent=1):
+    i = 1
+    if isinstance(obj, list):
+        objStr = '[\n'
+        copy = obj[:]
+        for v in copy:
+            for _ in range(0, indent*4):
+                objStr += ' '
+            _tmp = '{}'.format(str(v))
+            if ' object at ' in _tmp or isinstance(v, dict) or isinstance(v, list):
+                objStr += dumps(v, indent+1)
+            else:
+                if isinstance(v, basestring):
+                    objStr += '"' + _tmp + '"'
+                else:
+                    objStr += _tmp
+            if i != len(copy):
+                    objStr += ', \n'
+            i += 1
+    else:
+        objStr = '{\n'
+        if isinstance(obj, dict):
+            copy = obj.copy()
+        else:
+            for _ in range(0, indent*4):
+                objStr += ' '
+            objStr += '"|JPYON|": "'
+            objType = str(type(obj)).split("'")
+            objType = objType[1]
+            objStr += objType + '", \n'
+            copy = obj.__dict__.copy()
+        for k, v in copy.iteritems():
+            for _ in range(0, indent*4):
+                objStr += ' '
+            objStr += '"' + str(k) + '": '
+            _tmp = '{}'.format(str(v))
+            if ' object at ' in _tmp or isinstance(v, dict) or isinstance(v, list):
+                objStr += dumps(v, indent+1)
+            else:
+                if isinstance(v, basestring):
+                    objStr += '"' + _tmp + '"'
+                else:
+                    objStr += _tmp
+            if i != len(copy):
+                    objStr += ', \n'
+            i += 1
+    objStr += '\n'
+    for _ in range(0, (indent-1)*4):
+        objStr += ' '
+    if isinstance(obj, list):
+        objStr += ']'
+    else:
+        objStr += '}'
+    return objStr
+        
+def get_json(filepath, parse=True):
+    if _JPYONS_OBJECTS.has_key( ':|PYON|: {}'.format( filepath ) ):
+        return _JPYONS_OBJECTS[ ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ].__dict__
+    elif _JPYONS_DICTS.has_key( filepath ):
+        return _JPYONS_DICTS[filepath]
+    elif _JPYONS_LISTS.has_key( filepath ):
+        return _JPYONS_LISTS[filepath]
+    else:
+        return JDict(filepath)
+            
 @atexit.register
 def write_all():
     _jpyons = dict(_JPYONS_OBJECTS, **_JPYONS_DICTS)
