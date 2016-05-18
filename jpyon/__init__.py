@@ -44,20 +44,6 @@ class JList(list):
             _JPYONS_DATAS[ filepath ] = None 
             super(JList, self).__init__(*args, **kwargs)
         _JPYONS_LISTS[filepath] = self
-    '''
-    def __lt__(self, other):
-       return len(self) < len(other)
-    def __le__(self, other):
-        return len(self) <= len(other)
-    def __eq__(self, other):
-        return self.__repr__() == other.__repr__()
-    def __ne__(self, other):
-        return self.__repr__() != other.__repr__()
-    def __gt__(self, other):
-        return len(self) > len(other)
-    def __ge__(self, other):
-        return len(self) >= len(other)
-    '''
     
     def __lt__(self, other):
         return cy.get_len(self) < cy.get_len(other)
@@ -263,37 +249,17 @@ class JDict(dict):
         return _repr
         
     def __lt__(self, other):
-        print("lt")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) < len(other))
-        print('')
-        return len(self) < len(other)
+        return cy.get_len(self) < cy.get_len(other)
     def __le__(self, other):
-        print("le")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) <= len(other))
-        print('')
-        return len(self) <= len(other)
+        return cy.get_len(self) <= cy.get_len(other)
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
     def __ne__(self, other):
         return self.__repr__() != other.__repr__()
     def __gt__(self, other):
-        print("gt")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) > len(other))
-        print('')
-        return len(self) > len(other)
+        return cy.get_len(self) > cy.get_len(other)
     def __ge__(self, other):
-        print("ge")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) >= len(other))
-        print('')
-        return len(self) >= len(other)
+        return cy.get_len(self) >= cy.get_len(other)
             
     def __getitem__(self, key):
         _item = super(JDict, self).__getitem__(key)
@@ -387,11 +353,12 @@ class JPyon(object):
             
     def __getattribute__(self, name):
         #For linking Pyon objects with the same filepath
+        #print('n {}'.format(name))
         if hasattr(self, '_jpyon_filepath'):
             if _JPYONS_OBJECTS.has_key( ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ):
-                _existing_JPyon_dict = _JPYONS_OBJECTS[ ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ]
-                if id( super(JPyon, _existing_JPyon_dict).__getattribute__('__dict__') ) != id( super(JPyon, self).__getattribute__('__dict__') ):
-                    super(JPyon, self).__setattr__('__dict__', _existing_JPyon_dict)
+                _existing_JPyon = _JPYONS_OBJECTS[ ':|PYON|: {}'.format(super(JPyon, self).__getattribute__('_jpyon_filepath')) ]
+                if id( super(JPyon, _existing_JPyon).__getattribute__('__dict__') ) != id( super(JPyon, self).__getattribute__('__dict__') ):
+                    super(JPyon, self).__setattr__('__dict__', _existing_JPyon.__dict__)
     
         _attr = super(JPyon, self).__getattribute__(name)
         
