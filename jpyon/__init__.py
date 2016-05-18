@@ -23,7 +23,7 @@
 import json
 import os
 import atexit
-import cPickle
+import cython_helpers as cy
 
 _JPYONS_OBJECTS = {}
 _JPYONS_DICTS = {}
@@ -60,37 +60,17 @@ class JList(list):
     '''
     
     def __lt__(self, other):
-        print("lt")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) < len(other))
-        print('')
-        return len(self) < len(other)
+        return cy.get_len(self) < cy.get_len(other)
     def __le__(self, other):
-        print("le")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) <= len(other))
-        print('')
-        return len(self) <= len(other)
+        return cy.get_len(self) <= cy.get_len(other)
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
     def __ne__(self, other):
         return self.__repr__() != other.__repr__()
     def __gt__(self, other):
-        print("gt")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) > len(other))
-        print('')
-        return len(self) > len(other)
+        return cy.get_len(self) > cy.get_len(other)
     def __ge__(self, other):
-        print("ge")
-        print('__repr__ {} - Len {}'.format(self, len(self)))
-        print('__repr__ {} - Len {}'.format(other, len(other)))
-        print(len(self) >= len(other))
-        print('')
-        return len(self) >= len(other)
+        return cy.get_len(self) >= cy.get_len(other)
     
     
     '''
