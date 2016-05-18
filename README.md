@@ -5,13 +5,13 @@ Install using pip:
 pip install jpyon
 ```
 
-A python library that will associate python objects/dicts/lists with .json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made to the python object/dict/list and only when a modification is ACTUALLY made (i.e. if `myJList[0] == 5` then `myJList[0] = 5` will NOT trigger a write to the .json but `myJList[0] = 1` will) 
+A python library that will associate python objects/dicts/lists with .json files where the contents of said objects/dicts/lists will be converted to json objects/arrays and stored in their associated .json files whenever a modification is made to the python object/dict/list on exit and only when a modification is ACTUALLY made (i.e. if `myJList[0] == 5` then `myJList[0] = 5` will NOT trigger a write to the .json on exit but `myJList[0] = 1` will)
 
-If for some reason you want to manually write to the .json you can always call `myJList.write()` however if you do have to call this method it is most likely a bug in my code as the entire point of the library was so that I wouldn't have to remember to call write() every time I edited a variable.
+If you need to write an object to a .json file manually you can always call `myJList.write()` or if you need to write ALL instantiated JPYON objects to their respective .json files; you can call `jpyon.write_all()`.
 
-If I have done my job correctly; you shouldn't notice ANY differance between using my objects/dicts/lists and native python objects/dicts/lists aside from how they are instantiated.
+If I have done my job correctly; you shouldn't notice ANY differance between using my objects/dicts/lists and native python objects/dicts/lists aside from how they are instantiated. (In fact I have even fixed a bug in native python when making cross comparrisons between lists and dicts.)
 
-If an object/dict/list shares a .json with another object/dict/list; the second object instantiated will point to the first object. In this way; all objects should always mirror the contents of the .json without actually having to read and parse the .json every time a value is changed. While I do not recommend instantiating two objects that share the same .json file; that option is now availible to you. (You still cannot have two objects of differant types that share the same .json file for obvious reasons.)
+If an object/dict/list shares a .json with another object/dict/list; the second object instantiated will point to the first object. In this way; all objects should always mirror the contents of the .json without actually having to read and parse the .json every time a value is changed. While I do not recommend instantiating two objects that share the same .json file; that option is now availible to you. (You still cannot have two objects of differant types (i.e. a JDict sharing a file with a JPyon) that share the same .json file for obvious reasons.)
 
 If a .json file does not exist, to help speed up production; the library will create one automatically but if a folder in the path does not exist, in an effort to reduce messy repos due to typos; it will not create the folders. I feel this is a solid compromise between speed and safety.
 
