@@ -46,8 +46,8 @@ class JList(list):
             super(JList, self).__init__(*args, **kwargs)
     
     def __del__(self):
-        _JPYONS_DATAS.pop(self._jpyon_filepath)
         self.write()
+        _JPYONS_DATAS.pop(self._jpyon_filepath)
     
     def __lt__(self, other):
         return cy.get_len(self) < cy.get_len(other)
@@ -110,7 +110,7 @@ class JList(list):
         _list_copy = self[:]
             
         if _list_copy != _JPYONS_DATAS[ self._jpyon_filepath ]:
-            dump(_list_copy, super(JPyon, self).__getattribute__('_jpyon_filepath') )
+            dump(_list_copy, super(JList, self).__getattribute__('_jpyon_filepath') )
             
         _JPYONS_DATAS[ self._jpyon_filepath ] = _list_copy
                     
@@ -132,8 +132,8 @@ class JDict(dict):
             super(JDict, self).__init__( myDict )
         
     def __del__(self):
-        _JPYONS_DATAS.pop(self._jpyon_filepath)
         self.write()
+        _JPYONS_DATAS.pop(self._jpyon_filepath)
         
     def __lt__(self, other):
         return cy.get_len(self) < cy.get_len(other)
@@ -162,7 +162,7 @@ class JDict(dict):
         _dict_copy = self.copy()
             
         if _dict_copy != _JPYONS_DATAS[ self._jpyon_filepath ]:
-            dump(_dict_copy, super(JPyon, self).__getattribute__('_jpyon_filepath') )
+            dump(_dict_copy, super(JDict, self).__getattribute__('_jpyon_filepath') )
 
         _JPYONS_DATAS[ self._jpyon_filepath ] = _dict_copy
 
@@ -171,8 +171,8 @@ class JPyon(object):
         self.jPyon_Link(filepath)
         
     def __del__(self):
-        _JPYONS_DATAS.pop(self._jpyon_filepath)
         self.write()
+        _JPYONS_DATAS.pop(self._jpyon_filepath)
             
     def __getattribute__(self, name):
         _attr = super(JPyon, self).__getattribute__(name)
@@ -190,7 +190,8 @@ class JPyon(object):
     
         if os.path.isfile(filepath):
             _JPYONS_DATAS[filepath] = parse_json(filepath)
-            super(JPyon, self).__setattr__( '__dict__', dict( _JPYONS_DATAS[filepath] ) )
+            obj = _reinstantiate(_JPYONS_DATAS[filepath])
+            super(JPyon, self).__setattr__( '__dict__', dict( obj ) )
         else:
             _JPYONS_DATAS[filepath] = None
             super(JPyon, self).__setattr__( '__dict__', dict( self.__dict__ ) )
@@ -286,16 +287,16 @@ def dumps(obj, indent=1):
         objStr += '}'
     return objStr
             
-def reinstantiate(obj):
+def _reinstantiate(obj):
     #if obj is dict or list and if obj has a dict or list
     #recursively call self on that dict or list
     #if dict or list has attribute '|JPYON|'
     #Instantiate that object from the class listed under the key '|JPYON|'
     if hasattr(obj, 'iteritems'):
         obj_copy = obj.copy()
-        for k, v in obj_copy.iteritems:
-            if issubclass(v, dict) or issubclass(v, list):
-                obj[k] = reinstantiate(v)
+        for k, v in obj_copy.iteritems():
+            if issubclass(type(v), dict) or issubclass(type(v), list):
+                obj[k] = _reinstantiate(v)
             if k == "|JPYON|":
                 module = v.split(".")
                 className = v.pop(-1)
@@ -305,8 +306,8 @@ def reinstantiate(obj):
     else:
         obj_copy = obj[:]
         for k, v in enumerate(obj_copy):
-            if issubclass(v, dict) or issubclass(v, list):
-                obj[k] = reinstantiate(v)
+            if issubclass(type(v), dict) or issubclass(type(v), list):
+                obj[k] = _reinstantiate(v)
         
     return obj
            
