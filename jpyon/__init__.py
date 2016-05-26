@@ -298,16 +298,19 @@ def _reinstantiate(obj):
             if issubclass(type(v), dict) or issubclass(type(v), list):
                 obj[k] = _reinstantiate(v)
             if k == "|JPYON|":
-                module = v.split(".")
-                className = v.pop(-1)
-                module = '.'.join(v)
+                module = obj.pop("|JPYON|").split(".")
+                className = module.pop(-1)
+                module = '.'.join(module)
                 MyClass = getattr(importlib.import_module(module), className)
-                obj[k] = MyClass()
+                tmp_obj = MyClass.__new__(MyClass)
+                tmp_obj.__dict__ = obj
+                obj = tmp_obj
+                
     else:
         obj_copy = obj[:]
         for k, v in enumerate(obj_copy):
             if issubclass(type(v), dict) or issubclass(type(v), list):
-                obj[k] = _reinstantiate(v)
+                obj = _reinstantiate(v)
         
     return obj
            
