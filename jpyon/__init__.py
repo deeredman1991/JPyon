@@ -305,24 +305,32 @@ def _reinstantiate(obj):
                 tmp_obj = MyClass.__new__(MyClass)
                 tmp_obj.__dict__ = obj
                 obj = tmp_obj
-                
     else:
         obj_copy = obj[:]
         for k, v in enumerate(obj_copy):
             if issubclass(type(v), dict) or issubclass(type(v), list):
                 obj = _reinstantiate(v)
-        
     return obj
-           
+    
 @atexit.register
 def safety_test():
     if len(_JPYONS_DATAS) >= 1:
-        print("*WARNING* Object did not get deconstructed and therefore did not get saved.")
-        print("Potential memory leak...")
-        print("Are you storing the object globally?")
-        print("Are the object/objects attributes referencing themselves?")
-        print(_JPYONS_DATAS)
-           
+        print(15*"-")
+        print("")
+        print("SAVE ERROR: ")
+        print("    The following JPYON Object(s) did not get deconstructed and therefore did not get saved.")
+        print("")
+        print(">")
+        for k, v in _JPYONS_DATAS.iteritems():
+            print("> {}".format(k))
+        print(">")
+        print("")
+        print("*WARNING* Potential memory leak...")
+        print(" - Are you storing the object(s) globally?")
+        print(" - Is there circular referencing?")
+        print("")
+        print(15*"-")
+        
 #@atexit.register
 #def write_all():
 #    _jpyons = dict(_JPYONS_OBJECTS, **_JPYONS_DICTS)
