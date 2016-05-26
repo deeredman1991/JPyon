@@ -39,8 +39,10 @@ class JList(list):
             self._jpyon_filepath = str('{}.json'.format(filepath))
             
         if os.path.isfile(filepath):
-            _JPYONS_DATAS[ filepath ] = parse_json(filepath)
-            super(JList, self).__init__(_JPYONS_DATAS[ filepath ])
+            _JPYONS_DATAS[filepath] = parse_json(filepath)
+            _list = _reinstantiate(_JPYONS_DATAS[filepath])
+            
+            super(JList, self).__init__(_list)
         else:
             _JPYONS_DATAS[ filepath ] = None 
             super(JList, self).__init__(*args, **kwargs)
@@ -95,16 +97,6 @@ class JList(list):
             if len(self) < _old_len:
                 self.write()
     '''
-    
-    def __getitem__(self, key):
-        _item = super(JList, self).__getitem__(key)
-        
-        #For re-instantiating objects.
-        if isinstance(_item, dict) and _item.has_key("|JPYON|"):
-            #recursively re-instantiate object(s)
-            pass
-                
-        return _item
         
     def write(self):
         _list_copy = self[:]
@@ -125,8 +117,10 @@ class JDict(dict):
             self._jpyon_filepath = '{}.json'.format(filepath)
         
         if os.path.isfile(self._jpyon_filepath):
-            _JPYONS_DATAS[ filepath ] = parse_json(filepath)
-            super(JDict, self).__init__( _JPYONS_DATAS[ filepath ] )
+            _JPYONS_DATAS[filepath] = parse_json(filepath)
+            _dict = _reinstantiate(_JPYONS_DATAS[filepath])
+            
+            super(JDict, self).__init__( _dict )
         else:
             _JPYONS_DATAS[ filepath ] = None 
             super(JDict, self).__init__( myDict )
@@ -147,16 +141,6 @@ class JDict(dict):
         return cy.get_len(self) > cy.get_len(other)
     def __ge__(self, other):
         return cy.get_len(self) >= cy.get_len(other)
-            
-    def __getitem__(self, key):
-        _item = super(JDict, self).__getitem__(key)
-        
-        #For re-instantiating objects.
-        if isinstance(_item, dict) and _item.has_key("|JPYON|"):
-            #recursively re-instantiate object(s)
-            pass
-                    
-        return _item
         
     def write(self):
         _dict_copy = self.copy()
@@ -173,16 +157,6 @@ class JPyon(object):
     def __del__(self):
         self.write()
         _JPYONS_DATAS.pop(self._jpyon_filepath)
-            
-    def __getattribute__(self, name):
-        _attr = super(JPyon, self).__getattribute__(name)
-        
-        #For re-instantiating objects.
-        if isinstance(_attr, dict) and _attr.has_key("|JPYON|"):
-            #recursively re-instantiate object(s)
-            pass
-                
-        return _attr
             
     def jPyon_Link(self, filepath):
         if _JPYONS_DATAS.has_key(filepath):
@@ -288,10 +262,6 @@ def dumps(obj, indent=1):
     return objStr
             
 def _reinstantiate(obj):
-    #if obj is dict or list and if obj has a dict or list
-    #recursively call self on that dict or list
-    #if dict or list has attribute '|JPYON|'
-    #Instantiate that object from the class listed under the key '|JPYON|'
     if hasattr(obj, 'iteritems'):
         obj_copy = obj.copy()
         for k, v in obj_copy.iteritems():
@@ -309,7 +279,7 @@ def _reinstantiate(obj):
         obj_copy = obj[:]
         for k, v in enumerate(obj_copy):
             if issubclass(type(v), dict) or issubclass(type(v), list):
-                obj = _reinstantiate(v)
+                obj[k] = _reinstantiate(v)
     return obj
     
 @atexit.register
@@ -330,11 +300,3 @@ def safety_test():
         print(" - Is there circular referencing?")
         print("")
         print(15*"-")
-        
-#@atexit.register
-#def write_all():
-#    _jpyons = dict(_JPYONS_OBJECTS, **_JPYONS_DICTS)
-#    _jpyons.update(_JPYONS_LISTS)
-#    
-#    for k,v in _jpyons.iteritems():
-#        v.write()        
