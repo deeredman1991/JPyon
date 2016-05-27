@@ -23,14 +23,13 @@
 import json
 import os
 import atexit
-import cython_helpers as cy
 import importlib
 
 _JPYONS_DATAS = {}
 
 class JList(list):
     def __init__(self, filepath, *args, **kwargs):
-        if _JPYONS_DATAS.has_key(filepath):
+        if filepath in _JPYONS_DATAS:
             raise ValueError ("Json file already in use by another object.")
             
         if str(filepath).split('.')[-1] == 'json':
@@ -50,53 +49,6 @@ class JList(list):
     def __del__(self):
         self.write()
         _JPYONS_DATAS.pop(self._jpyon_filepath)
-    
-    def __lt__(self, other):
-        return cy.get_len(self) < cy.get_len(other)
-    def __le__(self, other):
-        return cy.get_len(self) <= cy.get_len(other)
-    def __eq__(self, other):
-        return self.__repr__() == other.__repr__()
-    def __ne__(self, other):
-        return self.__repr__() != other.__repr__()
-    def __gt__(self, other):
-        return cy.get_len(self) > cy.get_len(other)
-    def __ge__(self, other):
-        return cy.get_len(self) >= cy.get_len(other)
-    
-    '''
-    #Python 3.x prep
-    def __setitem__(self, *args):
-        if len(args) < 2:
-            #__setitem__(self, args[0] = key, args[1] = value)
-            if len(self) >= args[0]+1:
-                _val_copy = self.__getitem__(args[0])
-            super(JList, self).__setitem__(args[0], args[1])
-            if len(self) >= args[0]+1:
-                if '_val_copy' not in locals() or self.__getitem__(args[0]) != _val_copy:
-                    self.write()
-        else:
-            #__setslice__(self, args[0] = i, args[1] = j, args[2] = sequence)
-            _old_slice = super(JList, self).__getslice__(args[0], args[1])
-            print (_old_slice)
-            super(JList, self).__setitem__(args[0], args[1], args[2])
-            if super(JList, self).__getslice__(args[0], args[1]) != _old_slice:
-                self.write()
-        
-    def __delitem__(self, *args):
-        if len(args) == 1:
-            #__delitem__(self, args[0] = key)
-            _old_len = len(self)
-            super(JList, self).__delitem__(args[0])
-            if len(self) < _old_len:
-                self.write()
-        else:
-            #__delslice__(self, args[0] = i, args[1] = j)
-            _old_len = len(self)
-            super(JList, self).__delitem__(args[0], args[1])
-            if len(self) < _old_len:
-                self.write()
-    '''
         
     def write(self):
         _list_copy = self[:]
@@ -108,7 +60,7 @@ class JList(list):
                     
 class JDict(dict):
     def __init__(self, filepath, myDict={}):
-        if _JPYONS_DATAS.has_key(filepath):
+        if filepath in _JPYONS_DATAS:
             raise ValueError ("Json file already in use by another object.")
             
         if str(filepath).split('.')[-1] == 'json':
@@ -129,19 +81,6 @@ class JDict(dict):
         self.write()
         _JPYONS_DATAS.pop(self._jpyon_filepath)
         
-    def __lt__(self, other):
-        return cy.get_len(self) < cy.get_len(other)
-    def __le__(self, other):
-        return cy.get_len(self) <= cy.get_len(other)
-    def __eq__(self, other):
-        return self.__repr__() == other.__repr__()
-    def __ne__(self, other):
-        return self.__repr__() != other.__repr__()
-    def __gt__(self, other):
-        return cy.get_len(self) > cy.get_len(other)
-    def __ge__(self, other):
-        return cy.get_len(self) >= cy.get_len(other)
-        
     def write(self):
         _dict_copy = self.copy()
             
@@ -159,7 +98,7 @@ class JPyon(object):
         _JPYONS_DATAS.pop(self._jpyon_filepath)
             
     def jPyon_Link(self, filepath):
-        if _JPYONS_DATAS.has_key(filepath):
+        if filepath in _JPYONS_DATAS:
             raise ValueError ("Json file already in use by another object.")
     
         if os.path.isfile(filepath):
@@ -185,18 +124,28 @@ def parse_json(filepath):
     if os.path.isfile(filepath):
         with open(filepath, 'r') as infile:
             jsonData = json.load(infile)
-        if hasattr(jsonData, 'iteritems'):
-            for k, v in jsonData.iteritems():
-                if isinstance(k, unicode):
-                    k = str(k)
-                if isinstance(v, unicode):
-                    v = str(v)
+        if hasattr(jsonData, 'items'):
+            for k, v in jsonData.items():
+                try:
+                    if isinstance(k, unicode):
+                        k = str(k)
+                    if isinstance(v, unicode):
+                        v = str(v)
+                except NameError:
+                    if isinstance(k, str):
+                        k = str(k)
+                    if isinstance(v, str):
+                        v = str(v)
                 del jsonData[k]
                 jsonData[k] = v
         else:
             for k, v in enumerate(jsonData):
-                if isinstance(v, unicode):
-                    jsonData[k] = str(v)
+                try:
+                    if isinstance(v, unicode):
+                        jsonData[k] = str(v)
+                except NameError:
+                    if isinstance(v, str):
+                        jsonData[k] = str(v)
         return jsonData
     else:
         return None
@@ -218,10 +167,16 @@ def dumps(obj, indent=1):
             if ' object at ' in _tmp or isinstance(v, dict) or isinstance(v, list):
                 objStr += dumps(v, indent+1)
             else:
-                if isinstance(v, basestring):
-                    objStr += '"' + _tmp + '"'
-                else:
-                    objStr += _tmp
+                try:
+                    if isinstance(v, basestring):
+                        objStr += '"' + _tmp + '"'
+                    else:
+                        objStr += _tmp
+                except NameError:
+                    if isinstance(v, str):
+                        objStr += '"' + _tmp + '"'
+                    else:
+                        objStr += _tmp
             if i != len(copy):
                     objStr += ', \n'
             i += 1
@@ -237,7 +192,7 @@ def dumps(obj, indent=1):
             objType = objType[1]
             objStr += objType + '", \n'
             copy = obj.__dict__.copy()
-        for k, v in copy.iteritems():
+        for k, v in copy.items():
             for _ in range(0, indent*4):
                 objStr += ' '
             objStr += '"' + str(k) + '": '
@@ -245,10 +200,16 @@ def dumps(obj, indent=1):
             if ' object at ' in _tmp or isinstance(v, dict) or isinstance(v, list):
                 objStr += dumps(v, indent+1)
             else:
-                if isinstance(v, basestring):
-                    objStr += '"' + _tmp + '"'
-                else:
-                    objStr += _tmp
+                try:
+                    if isinstance(v, basestring):
+                        objStr += '"' + _tmp + '"'
+                    else:
+                        objStr += _tmp
+                except NameError:
+                    if isinstance(v, str):
+                        objStr += '"' + _tmp + '"'
+                    else:
+                        objStr += _tmp
             if i != len(copy):
                     objStr += ', \n'
             i += 1
@@ -262,9 +223,9 @@ def dumps(obj, indent=1):
     return objStr
             
 def _reinstantiate(obj):
-    if hasattr(obj, 'iteritems'):
+    if hasattr(obj, 'items'):
         obj_copy = obj.copy()
-        for k, v in obj_copy.iteritems():
+        for k, v in obj_copy.items():
             if issubclass(type(v), dict) or issubclass(type(v), list):
                 obj[k] = _reinstantiate(v)
             if k == "|JPYON|":
@@ -291,7 +252,7 @@ def safety_test():
         print("    The following JPYON Object(s) did not get deconstructed and therefore did not get saved.")
         print("")
         print(">")
-        for k, v in _JPYONS_DATAS.iteritems():
+        for k, v in _JPYONS_DATAS.items():
             print("> {}".format(k))
         print(">")
         print("")
